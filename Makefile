@@ -1,12 +1,19 @@
-CFLAGS = -wall -wextra
-LIBS = $(shell pkg-config --libs <LIBS>)
-INCLUDE = $(shell pkg-config --cflags <LIBS>)
+CFLAGS = -Wall -Wextra
+
+# example how to include lib paths
+# $(shell pkg-config --libs <LIBS>)
+LIBS =
+
+# same for include but different flag
+# $(shell pkg-config --cflags <LIBS>)
+INCLUDE =
+
 SRC = src/main.c
 OUT_DIR = build
 OUT_FILE = $(OUT_DIR)/<PROJECT_NAME>
 
 # object file in the build directory
-OBJ = $(out_dir)/$(notdir $(src:.c=.o))
+OBJ = $(OUT_DIR)/$(notdir $(SRC:.c=.o))
 
 # the main target
 <PROJECT_NAME>: $(OUT_FILE)

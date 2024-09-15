@@ -8,7 +8,8 @@ LIBS =
 # $(shell pkg-config --cflags <LIBS>)
 INCLUDE =
 
-SRC = src/main.c
+
+SRC = $(wildcard src/*.c)
 OUT_DIR = build
 OUT_FILE = $(OUT_DIR)/<PROJECT_NAME>
 

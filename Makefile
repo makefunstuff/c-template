@@ -1,34 +1,52 @@
-CFLAGS = -Wall -Wextra
-
-# example how to include lib paths
-# $(shell pkg-config --libs <LIBS>)
-LIBS =
-
-# same for include but different flag
-# $(shell pkg-config --cflags <LIBS>)
-INCLUDE =
-
-
-SRC = $(wildcard src/*.c)
+CC = clang
+CFLAGS = -Wall -Wextra -std=c11
+CFLAGS_DEBUG = $(CFLAGS) -g -O0
+CFLAGS_RELEASE = $(CFLAGS) -O2
+TARGET = <replaceme>
+SRC_DIR = src
 OUT_DIR = build
-OUT_FILE = $(OUT_DIR)/<PROJECT_NAME>
+LIBS =
+DEBUG_DIR = $(OUT_DIR)/debug
+RELEASE_DIR = $(OUT_DIR)/release
+INSTALL_DIR = /usr/local/bin
 
-# object file in the build directory
-OBJ = $(OUT_DIR)/$(notdir $(SRC:.c=.o))
+# Find all .c files in the src directory
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+# Generate lists of object files for debug and release builds
+OBJS_DEBUG = $(patsubst $(SRC_DIR)/%.c,$(DEBUG_DIR)/%.o,$(SRCS))
+OBJS_RELEASE = $(patsubst $(SRC_DIR)/%.c,$(RELEASE_DIR)/%.o,$(SRCS))
 
-# the main target
-<PROJECT_NAME>: $(OUT_FILE)
+all: debug release
 
-# rule to create the output file from the object file
-$(OUT_FILE): $(OBJ)
-	mkdir -p $(OUT_DIR)
-	clang $(CFLAGS) $(INCLUDE) -o $@ $^ $(LIBS)
+debug: $(DEBUG_DIR)/$(TARGET)
 
-# rule to compile the source file into the object file in build directory
-$(OBJ): $(SRC)
-	mkdir -p $(OUT_DIR)
-	clang $(CFLAGS) $(INCLUDE) -c -o $@ $<
+release: $(RELEASE_DIR)/$(TARGET)
+
+# Debug build
+$(DEBUG_DIR)/$(TARGET): $(OBJS_DEBUG) | $(DEBUG_DIR)
+	$(CC) $(CFLAGS_DEBUG) $(LIBS) -o $@ $(OBJS_DEBUG)
+
+$(DEBUG_DIR)/%.o: $(SRC_DIR)/%.c | $(DEBUG_DIR)
+	$(CC) $(CFLAGS_DEBUG) $(LIBS) -c $< -o $@
+
+# Release build
+$(RELEASE_DIR)/$(TARGET): $(OBJS_RELEASE) | $(RELEASE_DIR)
+	$(CC) $(CFLAGS_RELEASE) $(LIBS) -o $@ $(OBJS_RELEASE)
+
+$(RELEASE_DIR)/%.o: $(SRC_DIR)/%.c | $(RELEASE_DIR)
+	$(CC) $(CFLAGS_RELEASE) $(LIBS) -c $< -o $@
+
+$(DEBUG_DIR) $(RELEASE_DIR):
+	mkdir -p $@
 
 # run the program
-run: <PROJECT_NAME>
-	./$(OUT_FILE)
+run: debug
+	./$(DEBUG_DIR)/$(TARGET)
+
+clean:
+	rm -rf $(OUT_DIR)
+
+install: $(RELEASE_DIR)/$(TARGET)
+	install -m 755 $< $(INSTALL_DIR)
+
+.PHONY: all debug release clean install

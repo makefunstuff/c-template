@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ERROR_EXIT(...) fprintf(stderr, __VA_ARGS__); exit(1)
 #define ERROR_RETURN(R, ...) fprintf(stderr, __VA_ARGS__); return R
@@ -46,5 +47,15 @@ typedef unsigned char byte;
 #endif
 
 #define IS_POWER_OF_TWO(x) (((x) & ((x) - 1)) == 0)
+
+#define MIN(a, b) (((a)<(b)?(a):(b)))
+#define MAX(a, b) (((a)>(b)?(a):(b)))
+#define CLAMP(a, x, b) ( ((x) < (a) ? (a) : ((b) < (x) ? (b) : (x))) )
+#define CLAMP_TOP(a, b) MIN(a, b)
+#define CLAMP_BOT(a, b) MAX(a, b)
+
+#define MEM_SET_ZERO(p, b) memset((p), 0, (b))
+#define MEM_SET_ZERO_STRUCT(p) MEMORY_SET_ZERO((p), sizeof(*(p)))
+#define MEM_SET_ZERO_ARRAY(p) MEMORY_SET_ZERO((p), sizeof((p)))
 
 #endif // BASE_H

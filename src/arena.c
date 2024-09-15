@@ -3,14 +3,14 @@
 // NOTE this function calculates alignment and is being called before allocating memory
 // https://www.gingerbill.org/article/2019/02/08/memory-allocation-strategies-002/#memory-alignment stolen from here
 private
-uintptr_t align_forward(uintptr_t ptr, size_t alignment)
+uptr align_forward(uptr ptr, usize alignment)
 {
-  uintptr_t p, a, modulo;
+  uptr p, a, modulo;
 
   ASSERT(IS_POWER_OF_TWO(alignment));
 
   p = ptr;
-  a = (uintptr_t) alignment;
+  a = (uptr) alignment;
 
   // NOTE fast modulo operation, have no clue how does it work
   // TODO spend some time to understand this, for now I consider this as black magic I am dummily copypasted
@@ -25,12 +25,12 @@ uintptr_t align_forward(uintptr_t ptr, size_t alignment)
 }
 
 private
-void* arena_alloc_(arena_t* arena, size_t size, size_t alignment)
+void* arena_alloc_(arena_t* arena, usize size, usize alignment)
 {
-  uintptr_t curr_ptr = (uintptr_t)arena->buf + (uintptr_t)arena->cur_offset;
-  uintptr_t offset = align_forward(curr_ptr, alignment);
+  uptr curr_ptr = (uptr)arena->buf + (uptr)arena->cur_offset;
+  uptr offset = align_forward(curr_ptr, alignment);
 
-  offset -= (uintptr_t)arena->buf;
+  offset -= (uptr)arena->buf;
 
   if (offset + size <= arena->buf_len) {
     void* ptr = &arena->buf[offset];
@@ -45,7 +45,7 @@ void* arena_alloc_(arena_t* arena, size_t size, size_t alignment)
 }
 
 private inline
-void* arena_resize_(arena_t* arena, void* old_memory, size_t old_size, size_t new_size, size_t align)
+void* arena_resize_(arena_t* arena, void* old_memory, usize old_size, usize new_size, usize align)
 {
   byte* old_mem = (byte*) old_memory;
 
@@ -62,7 +62,7 @@ void* arena_resize_(arena_t* arena, void* old_memory, size_t old_size, size_t ne
       return old_memory;
     } else {
       void* new_memory = arena_alloc_(arena, new_size, align);
-      size_t copy_size = old_size < new_size ? old_size : new_size;
+      usize copy_size = old_size < new_size ? old_size : new_size;
       memmove(new_memory, old_memory, copy_size);
       return new_memory;
     }
@@ -72,7 +72,7 @@ void* arena_resize_(arena_t* arena, void* old_memory, size_t old_size, size_t ne
   }
 }
 
-void arena_init(arena_t* arena, void* buffer, size_t buf_len)
+void arena_init(arena_t* arena, void* buffer, usize buf_len)
 {
   arena->buf = buffer;
   arena->buf_len = buf_len;
@@ -81,12 +81,12 @@ void arena_init(arena_t* arena, void* buffer, size_t buf_len)
   arena->prev_offset = 0;
 }
 
-void* arena_alloc(arena_t* arena, size_t bytes)
+void* arena_alloc(arena_t* arena, usize bytes)
 {
   return arena_alloc_(arena, bytes, DEFAULT_ALIGNMENT);
 }
 
-void* arena_resize(arena_t* arena, void* old_mem, size_t old_size, size_t new_size)
+void* arena_resize(arena_t* arena, void* old_mem, usize old_size, usize new_size)
 {
   return arena_resize_(arena, old_mem, old_size, new_size, DEFAULT_ALIGNMENT);
 }
